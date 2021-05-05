@@ -1,12 +1,11 @@
 
-
-final case class BsTree(data: Int, left: Option[BsTree], right: Option[BsTree]) {
+final case class BsTree[A](data: A, left: Option[BsTree[A]], right: Option[BsTree[A]]) {
 
 }
 
 object BsTree {
 
-    def traverse(tree: Option[BsTree], f: Int => Unit): Unit = {
+    def traverse[A](tree: Option[BsTree[A]], f: A => Unit): Unit = {
         if (tree.isEmpty) ()
         else {
             val t = tree.get
@@ -16,10 +15,10 @@ object BsTree {
         }
     }
 
-    def insert(data: Int, tree: Option[BsTree]): BsTree =
+    def insert[A](data: A, tree: Option[BsTree[A]])(implicit ord: Ordering[A]): BsTree[A] =
     {
-        //import ord.mkOrderingOps
-        if (tree.isEmpty) BsTree(data, None, None)
+        import ord.mkOrderingOps
+        if (tree.isEmpty) BsTree[A](data, None, None)
         else {
             val t = tree.get
             if (data < t.data) t.copy(left = Some(insert(data, t.left)))
@@ -31,15 +30,15 @@ object BsTree {
     def main(args: Array[String]): Unit = {
         println("BsTree Example")
 
-        val tree: Option[BsTree] = Vector(15, 10, 20, 8, 12, 16, 25).foldLeft[Option[BsTree]](None) {
+        val tree: Option[BsTree[String]] = Vector("a", "g", "b", "z", "f", "o", "p").foldLeft[Option[BsTree[String]]](None) {
             (tree, data) => {
                 //println(s"Inserting $data")
-                Some(insert(data, tree))
+                Some(insert[String](data, tree))
             }
 
         }
 
-        traverse(tree, println)
+        traverse[String](tree, println)
 
     }
 }
