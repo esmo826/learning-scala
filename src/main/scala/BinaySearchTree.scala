@@ -2,7 +2,7 @@
 
 case class Node(data: Int, left: Option[Node] = None, right: Option[Node] = None)
 
-object BinaryTree {
+object BinarySearchTree {
 
     def inorder(root: Option[Node]): Unit = {
         root.fold(()){ n =>

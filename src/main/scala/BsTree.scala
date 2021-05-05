@@ -1,44 +1,51 @@
-
-final case class BsTree[A](data: A, left: Option[BsTree[A]], right: Option[BsTree[A]]) {
-
+trait BinaryTree[A] {
+    def insert[A](data: A)(implicit ord: Ordering[A]): BinaryTree[A]
+    def left: BinaryTree[A]
+    def right: BinaryTree[A]
+    def data: A
 }
 
-object BsTree {
+object BinaryTree {
 
-    def traverse[A](tree: Option[BsTree[A]], f: A => Unit): Unit = {
-        if (tree.isEmpty) ()
-        else {
-            val t = tree.get
-            traverse(t.left, f)
-            f(t.data)
-            traverse(t.right, f)
+    private final case class EmptyTree[A]() extends BinaryTree[A] {
+        def insert[A](data: A)(implicit ord: Ordering[A]): BinaryTree[A] = BTree(data, EmptyTree[A], EmptyTree[A])
+        def left = EmptyTree[A]
+        def right = EmptyTree[A]
+        def data = ???
+    }
+    private final case class BTree[A](data: A, left: BinaryTree[A], right: BinaryTree[A]) extends BinaryTree[A] {
+        def insert[A](data: A)(implicit ord: Ordering[A]): BinaryTree[A] = {
+            import ord.mkOrderingOps
+            this match {
+                case t: BTree[A] if (data < t.data) => BTree(t.data, left = left.insert(data), t.right)
+                case t: BTree[A] if (data >= t.data) => BTree(t.data, left = t.left, right = right.insert(data))
+            }
         }
     }
 
-    def insert[A](data: A, tree: Option[BsTree[A]])(implicit ord: Ordering[A]): BsTree[A] =
-    {
-        import ord.mkOrderingOps
-        if (tree.isEmpty) BsTree[A](data, None, None)
-        else {
-            val t = tree.get
-            if (data < t.data) t.copy(left = Some(insert(data, t.left)))
-            else t.copy(right = Some(insert(data, t.right)))
-        }
+    def empty[A]: BinaryTree[A] = EmptyTree[A]()
 
+    def traverse[A](tree: BinaryTree[A], f: A => Unit): Unit = {
+        tree match {
+            case EmptyTree() => ()
+            case t => {
+                traverse(t.left, f)
+                f(t.data)
+                traverse(t.right, f)
+            }
+        }
     }
 
     def main(args: Array[String]): Unit = {
-        println("BsTree Example")
+        println("BinaryTree Example")
 
-        val tree: Option[BsTree[String]] = Vector("a", "g", "b", "z", "f", "o", "p").foldLeft[Option[BsTree[String]]](None) {
+        val tree : BinaryTree[Int] = Vector(15, 50, 20, 12, 9, 7, 66, 79).foldLeft(empty[Int]) {
             (tree, data) => {
-                //println(s"Inserting $data")
-                Some(insert[String](data, tree))
+                tree.insert[Int](data)
             }
-
         }
 
-        traverse[String](tree, println)
+        traverse[Int](tree, println)
 
     }
 }
